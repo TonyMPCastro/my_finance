@@ -28,7 +28,7 @@ O projeto foi desenvolvido em equipe para aplicar conceitos fundamentais de dese
 ### Passos
 1. Clone este repositório:
    ```bash
-   git clone https://github.com/TonyMPCastro/jack-compiler.git
+   git clone https://github.com/TonyMPCastro/my_finance.git
 
 2. Crie o VENV:
    ```bash
