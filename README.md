@@ -25,6 +25,23 @@ O projeto foi desenvolvido em equipe para aplicar conceitos fundamentais de dese
 - Virtualenv (opcional, mas recomendado para isolamento do ambiente)
 - Banco de dados (SQLite incluso no Django, mas pode ser PostgreSQL, MySQL, etc.)
 
+### Passos
+1. Clone este repositório:
+   ```bash
+   git clone https://github.com/TonyMPCastro/jack-compiler.git
+
+2. Crie o VENV:
+   ```bash
+    python -m venv venv
+
+3. Rode o VENV:
+   ```bash
+    venv/Scripts/activate
+
+4. Inatall dependencia:
+   ```bash
+    pip install -r requirements.txt
+
 ## ✒️ Autores
 
 * **ANTONIO MP CASTRO** - *ANTONIO MARCOS PATRICIO CASTRO* - [TonyMPCastro](https://github.com/TonyMPCastro)
