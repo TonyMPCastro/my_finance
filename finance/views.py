@@ -1,10 +1,13 @@
+import random
+import json
+import locale
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
-import locale
 from datetime import datetime, timedelta, date
-import random
-import json
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .forms import CadastroForm
 
 # Define o locale para português
 locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -168,3 +171,22 @@ def listar_recebimentos(request):
         'despesas': despesas_mes,
         'mes': hoje.strftime('%B %Y').upper()
     })
+
+
+
+def cadastro(request):
+    if request.method == "POST":
+        form = CadastroForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['senha']
+            )
+            messages.success(request, "Cadastro realizado com sucesso!")
+            return redirect('login')  # Altere para a URL de login
+
+    else:
+        form = CadastroForm()
+
+    return render(request, "cadastro/form.html", {"form": form})
