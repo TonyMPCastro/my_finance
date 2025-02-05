@@ -126,12 +126,12 @@ def logout_view(request):
 def listar_despesas(request):
     # Dados fixos das despesas (substitua com seus próprios dados)
     despesas = [
-        {'categoria': 'Alimentação', 'valor': 200.00, 'descricao': 'Supermercado', 'data': '2025-01-05'},
+        {'categoria': 'Viagem', 'valor': 200.00, 'descricao': 'Férias', 'data': '2025-01-05'},
         {'categoria': 'Transporte', 'valor': 150.00, 'descricao': 'Uber', 'data': '2025-01-10'},
         {'categoria': 'Saúde', 'valor': 100.00, 'descricao': 'Consulta médica', 'data': '2025-01-12'},
         {'categoria': 'Entretenimento', 'valor': 80.00, 'descricao': 'Cinema', 'data': '2025-01-15'},
         {'categoria': 'Educação', 'valor': 120.00, 'descricao': 'Curso online', 'data': '2025-01-18'},
-        {'categoria': 'Alimentação', 'valor': 50.00, 'descricao': 'Lanche', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
+        {'categoria': 'Mercado', 'valor': 50.00, 'descricao': 'Compras', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
     ]
 
     # Data do mês atual
@@ -151,12 +151,12 @@ def listar_despesas(request):
 def listar_recebimentos(request):
     # Dados fixos das despesas (substitua com seus próprios dados)
     despesas = [
-        {'categoria': 'Alimentação', 'valor': 200.00, 'descricao': 'Supermercado', 'data': '2025-01-05'},
+        {'categoria': 'Salário', 'valor': 2200.00, 'descricao': 'Supermercado', 'data': '2025-01-05'},
         {'categoria': 'Transporte', 'valor': 150.00, 'descricao': 'Uber', 'data': '2025-01-10'},
         {'categoria': 'Saúde', 'valor': 100.00, 'descricao': 'Consulta médica', 'data': '2025-01-12'},
         {'categoria': 'Entretenimento', 'valor': 80.00, 'descricao': 'Cinema', 'data': '2025-01-15'},
         {'categoria': 'Educação', 'valor': 120.00, 'descricao': 'Curso online', 'data': '2025-01-18'},
-        {'categoria': 'Alimentação', 'valor': 50.00, 'descricao': 'Lanche', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
+        {'categoria': 'Gratificação', 'valor': 50.00, 'descricao': 'Vendas', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
     ]
 
     # Data do mês atual
