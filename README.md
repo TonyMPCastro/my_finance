@@ -34,15 +34,25 @@ O projeto foi desenvolvido em equipe para aplicar conceitos fundamentais de dese
    ```bash
     python -m venv venv
 
+    python3 -m venv venv  # Macbook
+
+    python3 manage.py runserver #Executar
+
 3. Rode o VENV:
    ```bash
-    venv/Scripts/activate
+    venv2/Scripts/activate
+
+    source venv2/bin/activate # Macbook
+
+    deactivate # Macbook
 
 4. Inatall dependencia:
    ```bash
     pip install -r requirements.txt
 
+    pip3 install -r requirements.txt # Macbook
+
 ## ✒️ Autores
 
 * **ANTONIO MP CASTRO** - *ANTONIO MARCOS PATRICIO CASTRO* - [TonyMPCastro](https://github.com/TonyMPCastro)
-* **NILTON MANGUEIRA** - *NILTON MACIEL MANGUEIRA* - [e-Mangueira](https://github.com/e-Mangueira)
+* **NILTON MANGUEIRA** - *NILTON MACIEL MANGUEIRA* - [mangueiraDev](https://github.com/mangueiraDev)
