@@ -8,11 +8,13 @@ from datetime import datetime, timedelta, date
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import CadastroForm
+from django.views.decorators.cache import never_cache
 
 # Define o locale para português
 locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
 @login_required
+@never_cache
 def home(request):
     # Usuários fictícios
     users = [
@@ -118,11 +120,13 @@ def login(request):
     return render(request, "login/login.html")
 
 @login_required
+@never_cache
 def logout_view(request):
     logout(request)
     return redirect('/login/') # Replace 'login' with the name of your login page URL
 
 @login_required
+@never_cache
 def listar_despesas(request):
     # Dados fixos das despesas (substitua com seus próprios dados)
     despesas = [
@@ -148,6 +152,7 @@ def listar_despesas(request):
     })
 
 @login_required
+@never_cache
 def listar_recebimentos(request):
     # Dados fixos das despesas (substitua com seus próprios dados)
     despesas = [
