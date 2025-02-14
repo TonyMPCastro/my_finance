@@ -1,6 +1,8 @@
 import random
 import json
 import locale
+import pprint  # Módulo para imprimir dicionários de forma organizada
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import logout
@@ -9,6 +11,10 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import CadastroForm
 from django.views.decorators.cache import never_cache
+from . import models
+from collections import defaultdict
+from django.db.models import Sum
+from decimal import Decimal
 
 # Define o locale para português
 locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -128,26 +134,29 @@ def logout_view(request):
 @login_required
 @never_cache
 def listar_despesas(request):
-    # Dados fixos das despesas (substitua com seus próprios dados)
-    despesas = [
-        {'categoria': 'Alimentação', 'valor': 200.00, 'descricao': 'Supermercado', 'data': '2025-01-05'},
-        {'categoria': 'Transporte', 'valor': 150.00, 'descricao': 'Uber', 'data': '2025-01-10'},
-        {'categoria': 'Saúde', 'valor': 100.00, 'descricao': 'Consulta médica', 'data': '2025-01-12'},
-        {'categoria': 'Entretenimento', 'valor': 80.00, 'descricao': 'Cinema', 'data': '2025-01-15'},
-        {'categoria': 'Educação', 'valor': 120.00, 'descricao': 'Curso online', 'data': '2025-01-18'},
-        {'categoria': 'Alimentação', 'valor': 50.00, 'descricao': 'Lanche', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
-    ]
+
+    today = datetime.today()
+    despesas = models.MovementFinancial.objects.filter(category__type_category=2, due_at__year=today.year, due_at__month=today.month)  # 🔹 Filtra os registros
 
     # Data do mês atual
     hoje = date.today()
-    inicio_do_mes = hoje.replace(day=1)
-    fim_do_mes = hoje.replace(day=1, month=hoje.month + 1) if hoje.month < 12 else hoje.replace(day=1, month=1, year=hoje.year + 1)
 
-    # Filtra as despesas do mês atual
-    despesas_mes = [despesa for despesa in despesas if inicio_do_mes <= date.fromisoformat(despesa['data']) < fim_do_mes]
+    # Criar dicionário para agrupar os movimentos por categoria e somar os valores
+    grouped_movements = defaultdict(lambda: {"movements": [], "total": Decimal(0)})
+    total_general = Decimal(0)
+
+    for movement in despesas:
+        category_name = movement.category.name
+        grouped_movements[category_name]["movements"].append(movement)
+        grouped_movements[category_name]["total"] += movement.value
+        total_general += movement.value  # Soma geral
+
+    # 🔹 Exibir no terminal do servidor
+    #pprint.pprint(dict(grouped_movements))
 
     return render(request, 'pages/contas_pagar/list.html', {
-        'despesas': despesas_mes,
+        "grouped_movements": dict(grouped_movements),
+        "total_general": total_general,
         'mes': hoje.strftime('%B %Y').upper()
     })
 
