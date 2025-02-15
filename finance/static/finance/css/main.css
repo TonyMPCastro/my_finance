@@ -255,11 +255,11 @@
       justify-content: space-between;
       white-space: nowrap;
       transition: 0.3s;
+      text-decoration: none;
     }
   
     .navmenu a i,
     .navmenu a:focus i {
-      font-size: 12px;
       line-height: 0;
       margin-left: 5px;
       transition: 0.3s;
@@ -375,6 +375,7 @@
       justify-content: space-between;
       white-space: nowrap;
       transition: 0.3s;
+      text-decoration: none;
     }
   
     .navmenu a i,
@@ -390,6 +391,7 @@
       border-radius: 50%;
       transition: 0.3s;
       background-color: color-mix(in srgb, var(--accent-color), transparent 90%);
+      text-decoration: none;
     }
   
     .navmenu a i:hover,
@@ -458,7 +460,7 @@
       display: block;
     }
   }
-  
+
   /*--------------------------------------------------------------
   # Global Footer
   --------------------------------------------------------------*/
@@ -800,6 +802,24 @@
     transition: all 0.3s ease;
     margin: 2px;
   }
+
+  .hero .btn-outline-primary,
+  .hero .btn-outline-danger,
+  .hero .btn-outline-secondary{
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 2px;
+  }
+  
+
+  .hero .btn-danger {
+    color: var(--contrast-color);
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 2px;
+  }
   
   .hero .btn-primary:hover {
     background-color: color-mix(in srgb, var(--accent-color), black 20%);
@@ -963,6 +983,10 @@
     100% {
       transform: translateY(0);
     }
+  }
+
+  .hero .form-label{
+    font-weight: bolder;
   }
   
   /*--------------------------------------------------------------

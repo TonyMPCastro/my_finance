@@ -25,25 +25,25 @@
             <div class="col-md-3">
               <div class="card p-3 mb-3 text-white bg-primary">
                   <h5>Saldo atual</h5>
-                  <h3>R$ 1.000,00</h3>
+                  <h3>R$ {{saldo_atual|floatformat:2}}</h3>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 mb-3 text-white bg-info">
                   <h5>Saldo do mês</h5>
-                  <h3>R$ 368,00</h3>
+                  <h3>R$ {{saldo_mes|floatformat:2}}</h3>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 mb-3 text-white bg-warning">
                   <h5>Saídas do mês</h5>
-                  <h3>R$ 2.058,00</h3>
+                  <h3>R$ {{valor_despesas_mes|floatformat:2}}</h3>
               </div>
             </div>
             <div class="col-md-3">
               <div class="card p-3 text-white bg-danger">
                   <h5>Saídas p/ 30 Dias</h5>
-                  <h3>R$ 1.250,00</h3>
+                  <h3>R$ {{despesas_30_dias|floatformat:2}}</h3>
               </div>
             </div>
 
@@ -53,7 +53,9 @@
               <!-- Card de Vendas -->
               <div class="col-md-6">
                   <div class="card p-3">
-                      <h5>Comparação Receita x Despesa</h5>
+                    <div class="card-header bg-dark text-white text-center">
+                        <h5 class="text-white">Comparação Receita x Despesa</h5>
+                    </div>
                       <div class="chart-container">
                           <canvas id="salesChart"></canvas>
                       </div>
@@ -63,7 +65,9 @@
               <!-- Card de Tráfego -->
               <div class="col-md-6">
                   <div class="card p-3">
-                      <h5>Comparação Receita x Despesa</h5>
+                    <div class="card-header bg-dark text-white text-center">
+                        <h5 class="text-white">Comparação Receita x Despesa</h5>
+                    </div>
                       <div class="chart-container">
                           <canvas id="trafficChart"></canvas>
                       </div>
@@ -75,26 +79,49 @@
               <!-- Usuários -->
               <div class="col-md-8">
                   <div class="card p-3">
-                      <h5>Users</h5>
+                    <div class="card-header bg-dark text-white text-center">
+                        <h5 class="text-white">Extato do Mês</h5>
+                    </div>
                       <table class="table">
-                          <thead>
-                              <tr>
-                                  <th>User</th>
-                                  <th>Country</th>
-                                  <th>Usage</th>
-                                  <th>Activity</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              {% for user in users %}
-                              <tr>
-                                  <td>{{ user.name }}</td>
-                                  <td>{{ user.country }}</td>
-                                  <td>{{ user.usage }}%</td>
-                                  <td>{{ user.last_login }}</td>
-                              </tr>
-                              {% endfor %}
-                          </tbody>
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Descrição</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Categoria</th>
+                                <th class="text-center">Data</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in movements %}
+                            <tr>
+                                <td>{{ movement.description }}</td>
+                                <td class="text-center">{{ movement.status }}</td>
+                                <td class="text-center">{{ movement.category }}</td> 
+        
+                                {% if movement.payment_at %}
+                                    <td  class="text-center" >{{ movement.payment_at }}</td>
+                                {% else %}
+                                    <td  class="text-center" >{{ movement.due_at }}   </td>
+                                {% endif %}
+        
+                                {% if 2 == movement.category.type_category.id %}
+                                    <td  style="text-align: right; color: red; " >- R$ {{ movement.value }}   </td>
+                                {% else %}
+                                    <td  style="text-align: right; color: blue; " >R$ {{ movement.value }}   </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+        
+                        {% if total_general %}
+        
+                            <tr style="text-align: right;">
+                                <td  style="text-align: right;" colspan="4"><strong>Total:</strong></td>
+                                <td  style="text-align: right;"><strong>R$ {{ total_general|floatformat:2 }}</strong></td>
+                            </tr>
+        
+                        {%endif%}
+                        </tbody>
                       </table>
                   </div>
               </div>

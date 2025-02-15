@@ -11,5 +11,6 @@ urlpatterns = [
      path('logout/', views.logout_view , name='logout'),  # Rota para logout     
      path('despesas/', views.listar_despesas, name='listar_despesas'),
      path('recebimentos/', views.listar_recebimentos, name='listar_recebimentos'),     
-     path('cadastro/', views.cadastro, name='cadastro'),    
+     path('cadastro/', views.cadastro, name='cadastro'),  
+     path('extrato/', views.listar_extrato, name='listar_extrato'),    
 ]

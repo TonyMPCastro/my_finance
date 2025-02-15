@@ -17,12 +17,13 @@
         <div class="col-md-6">
             <div class="card shadow-lg">
                 <div class="card-header text-center bg-primary text-white">
-                    <h4>Cadastro</h4>
+                    <h4 class=" text-white">Cadastro</h4>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        <div class="alert alert-success">
-                            {% for message in messages %}
+                    
+                    {% if form.confirmar_senha.errors %}
+                        <div class="alert alert-danger">
+                            {% for message in form.confirmar_senha.errors %}
                                 {{ message }}
                             {% endfor %}
                         </div>
@@ -30,6 +31,11 @@
 
                     <form method="POST">
                         {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Nome</label>
+                            {{ form.first_name }}
+                        </div>
                         
                         <div class="mb-3">
                             <label class="form-label">Nome de usuário</label>

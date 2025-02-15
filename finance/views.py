@@ -13,8 +13,9 @@ from .forms import CadastroForm
 from django.views.decorators.cache import never_cache
 from . import models
 from collections import defaultdict
-from django.db.models import Sum
+from datetime import datetime, date
 from decimal import Decimal
+from django.db.models import Q, Sum
 
 # Define o locale para português
 locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
@@ -22,15 +23,18 @@ locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 @login_required
 @never_cache
 def home(request):
-    # Usuários fictícios
-    users = [
-        {"name": "Yorgos Avramura", "country": "🇬🇷", "usage": 50, "last_login": "10 seconds ago"},
-        {"name": "Avram Tsariscos", "country": "🇧🇷", "usage": 50, "last_login": "5 minutes ago"},
-        {"name": "Quintin Ed", "country": "🇮🇳", "usage": 50, "last_login": "1 hour ago"},
-        {"name": "Eneka Kwadwo", "country": "🇫🇷", "usage": 50, "last_login": "1 week ago"},
-        {"name": "Aqquestas Tadeia", "country": "🇪🇸", "usage": 50, "last_login": "3 months ago"},
-        {"name": "Fridrich David", "country": "🇩🇪", "usage": 50, "last_login": "1 year ago"},
-    ]
+    
+    today = datetime.today()
+
+    movements = models.MovementFinancial.objects.filter(due_at__year=today.year, due_at__month=today.month)
+    # Criar dicionário para agrupar os movimentos por categoria e somar os valores
+    total_general = Decimal(0)
+
+    for movement in movements:
+        if(movement.category.type_category.id == 2):
+            total_general -= movement.value  # Soma geral
+        else:
+            total_general += movement.value  # Soma geral
 
     # Gerando os últimos 12 meses automaticamente
     meses = [(datetime.today() - timedelta(days=30*i)).strftime('%b') for i in range(11, -1, -1)]
@@ -51,6 +55,53 @@ def home(request):
             "hoverOffset": 4
         }
     }
+
+    entradas = models.MovementFinancial.objects.filter(category__type_category=1).aggregate(total=Sum('value'))
+    saidas = models.MovementFinancial.objects.filter(category__type_category=2).aggregate(total=Sum('value'))
+    
+    if entradas['total']:
+        valor_total_entradas =  entradas['total'] 
+    else:
+        valor_total_entradas =  0  # Lida com o caso de não haver registros
+
+    if saidas['total']:
+        valor_total_saidas = saidas['total'] 
+    else:
+        valor_total_saidas = 0  # Lida com o caso de não haver registros
+
+
+    entradas_mes = models.MovementFinancial.objects.filter(category__type_category=1, due_at__year=today.year, due_at__month=today.month).aggregate(total=Sum('value'))
+
+    if entradas_mes['total']:
+        valor_entradas_mes = entradas_mes['total'] 
+    else:
+        valor_entradas_mes = 0  # Lida com o caso de não haver registros
+    
+    despesas_mes = models.MovementFinancial.objects.filter(category__type_category=2, due_at__year=today.year, due_at__month=today.month).aggregate(total=Sum('value'))
+
+    if despesas_mes['total']:
+        valor_despesas_mes = despesas_mes['total'] 
+    else:
+        valor_despesas_mes = 0  # Lida com o caso de não haver registros
+
+    thirty_days_from_now = today + timedelta(days=30)
+
+    despesas_30_dias = models.MovementFinancial.objects.filter(
+        category__type_category=2,
+        due_at__range=(today, thirty_days_from_now)  # Filtra entre hoje e 30 dias no futuro
+    ).aggregate(total=Sum('value'))
+
+    if despesas_30_dias['total']:
+        despesas_30_dias = despesas_30_dias['total'] 
+    else:
+        despesas_30_dias = 0  # Lida com o caso de não haver registros
+
+
+    saldo_atual = valor_total_entradas - valor_total_saidas
+
+    saldo_mes = valor_entradas_mes - valor_despesas_mes
+
+
 
     # Dados para os gráficos
     sales_data = {
@@ -106,13 +157,18 @@ def home(request):
     }
     
     context = {
-        "users": users,
+        "movements": movements,
         "sales_labels": meses,
         "sales_data": json.dumps(sales_data),
         "traffic_labels": meses,
         "traffic_data": json.dumps(traffic_data) ,
         "categoryData" : categoryData,
-        "categorias":categorias
+        "categorias":categorias,
+        'saldo_atual': saldo_atual,
+        'saldo_mes': saldo_mes,
+        'valor_despesas_mes': valor_despesas_mes,
+        'despesas_30_dias':despesas_30_dias,
+        'total_general': total_general
     }
 
     return render(request, 'home.html', context)
@@ -136,10 +192,46 @@ def logout_view(request):
 def listar_despesas(request):
 
     today = datetime.today()
-    despesas = models.MovementFinancial.objects.filter(category__type_category=2, due_at__year=today.year, due_at__month=today.month)  # 🔹 Filtra os registros
+    despesas = models.MovementFinancial.objects.filter(category__type_category=2)
 
-    # Data do mês atual
-    hoje = date.today()
+    categories_list = models.Category.objects.filter(type_category=2)  # Pegando todas as categorias
+
+    # Pegando filtros da request
+    start_date = request.POST.get("start_date")  # Data inicial (due_at)
+    end_date = request.POST.get("end_date")  # Data final (due_at)
+    start_payment = request.POST.get("start_payment")  # Data inicial (payment_at)
+    end_payment = request.POST.get("end_payment")  # Data final (payment_at)
+    categorys = request.POST.getlist("category")  # Lista de categorias selecionadas
+
+    titulo = "Despesas"
+
+    # Se nenhum filtro for aplicado, usar mês atual
+    if not (start_date or end_date or start_payment or end_payment or categorys):
+        despesas = despesas.filter(due_at__year=today.year, due_at__month=today.month)
+        
+        # Data do mês atual
+        hoje = date.today()
+        titulo = "Despesas de "+hoje.strftime('%B %Y').upper()
+    else:
+        # Filtro por intervalo de data de vencimento (due_at)
+        if start_date and end_date:
+            despesas = despesas.filter(due_at__range=[start_date, end_date])
+        elif start_date:
+            despesas = despesas.filter(due_at__gte=start_date)
+        elif end_date:
+            despesas = despesas.filter(due_at__lte=end_date)
+
+        # Filtro por intervalo de data de pagamento (payment_at)
+        if start_payment and end_payment:
+            despesas = despesas.filter(payment_at__range=[start_payment, end_payment])
+        elif start_payment:
+            despesas = despesas.filter(payment_at__gte=start_payment)
+        elif end_payment:
+            despesas = despesas.filter(payment_at__lte=end_payment)
+
+        # Filtro por categorias (caso seja enviado)
+        if categorys:
+            despesas = despesas.filter(category_id__in=categorys)
 
     # Criar dicionário para agrupar os movimentos por categoria e somar os valores
     grouped_movements = defaultdict(lambda: {"movements": [], "total": Decimal(0)})
@@ -157,36 +249,117 @@ def listar_despesas(request):
     return render(request, 'pages/contas_pagar/list.html', {
         "grouped_movements": dict(grouped_movements),
         "total_general": total_general,
-        'mes': hoje.strftime('%B %Y').upper()
+        "categories": categories_list,
+        'categorys' :categorys,
+        'titulo': titulo
     })
 
 @login_required
 @never_cache
 def listar_recebimentos(request):
-    # Dados fixos das despesas (substitua com seus próprios dados)
-    despesas = [
-        {'categoria': 'Salário', 'valor': 2200.00, 'descricao': 'Supermercado', 'data': '2025-01-05'},
-        {'categoria': 'Transporte', 'valor': 150.00, 'descricao': 'Uber', 'data': '2025-01-10'},
-        {'categoria': 'Saúde', 'valor': 100.00, 'descricao': 'Consulta médica', 'data': '2025-01-12'},
-        {'categoria': 'Entretenimento', 'valor': 80.00, 'descricao': 'Cinema', 'data': '2025-01-15'},
-        {'categoria': 'Educação', 'valor': 120.00, 'descricao': 'Curso online', 'data': '2025-01-18'},
-        {'categoria': 'Gratificação', 'valor': 50.00, 'descricao': 'Vendas', 'data': '2025-02-01'},  # Exemplo de despesa de fevereiro
-    ]
+    today = datetime.today()
+    recebimentos = models.MovementFinancial.objects.filter(category__type_category=1)
 
-    # Data do mês atual
-    hoje = date.today()
-    inicio_do_mes = hoje.replace(day=1)
-    fim_do_mes = hoje.replace(day=1, month=hoje.month + 1) if hoje.month < 12 else hoje.replace(day=1, month=1, year=hoje.year + 1)
+    categories_list = models.Category.objects.filter(type_category=1)  # Pegando todas as categorias
 
-    # Filtra as despesas do mês atual
-    despesas_mes = [despesa for despesa in despesas if inicio_do_mes <= date.fromisoformat(despesa['data']) < fim_do_mes]
+    # Pegando filtros da request
+ 
+    start_payment = request.POST.get("start_payment")  # Data inicial (payment_at)
+    end_payment = request.POST.get("end_payment")  # Data final (payment_at)
+    categorys = request.POST.getlist("category")  # Lista de categorias selecionadas
+
+    titulo = "Recebimentos"
+
+    # Se nenhum filtro for aplicado, usar mês atual
+    if not (start_payment or end_payment or categorys):
+        recebimentos = recebimentos.filter(due_at__year=today.year, due_at__month=today.month)
+        
+        # Data do mês atual
+        hoje = date.today()
+        titulo = "Recebimentos de "+hoje.strftime('%B %Y').upper()
+    else:
+        # Filtro por intervalo de data de pagamento (payment_at)
+        if start_payment and end_payment:
+            recebimentos = recebimentos.filter(payment_at__range=[start_payment, end_payment])
+        elif start_payment:
+            recebimentos = recebimentos.filter(payment_at__gte=start_payment)
+        elif end_payment:
+            recebimentos = recebimentos.filter(payment_at__lte=end_payment)
+
+        # Filtro por categorias (caso seja enviado)
+        if categorys:
+            recebimentos = recebimentos.filter(category_id__in=categorys)
+
+    # Criar dicionário para agrupar os movimentos por categoria e somar os valores
+    grouped_movements = defaultdict(lambda: {"movements": [], "total": Decimal(0)})
+    total_general = Decimal(0)
+
+    for movement in recebimentos:
+        category_name = movement.category.name
+        grouped_movements[category_name]["movements"].append(movement)
+        grouped_movements[category_name]["total"] += movement.value
+        total_general += movement.value  # Soma geral
+
+    # 🔹 Exibir no terminal do servidor
+    #pprint.pprint(dict(grouped_movements))
 
     return render(request, 'pages/recebimentos/list.html', {
-        'despesas': despesas_mes,
-        'mes': hoje.strftime('%B %Y').upper()
+        "grouped_movements": dict(grouped_movements),
+        "total_general": total_general,
+        "categories": categories_list,
+        'categorys' :categorys,
+        'titulo': titulo
     })
 
 
+@login_required
+@never_cache
+def listar_extrato(request):
+    today = datetime.today()
+    recebimentos = models.MovementFinancial.objects.filter(due_at__year=today.year)
+
+    # Pegando filtros da request
+    start_payment = request.POST.get("start_payment")  # Data inicial (payment_at)
+    end_payment = request.POST.get("end_payment")  # Data final (payment_at)
+
+    titulo = "Extrato"
+
+    # Se nenhum filtro for aplicado, usar mês atual
+    if not (start_payment or end_payment):
+        recebimentos = recebimentos.filter(due_at__year=today.year, due_at__month=today.month)
+        
+        # Data do mês atual
+        hoje = date.today()
+        titulo = "Extrato de "+hoje.strftime('%B %Y').upper()
+    else:
+        # Filtro por intervalo de data de pagamento (payment_at)
+        if start_payment and end_payment:
+            recebimentos = recebimentos.filter(payment_at__range=[start_payment, end_payment])
+            recebimentos = recebimentos.filter(due_at__range=[start_payment, end_payment])
+        elif start_payment:
+            recebimentos = recebimentos.filter(payment_at__gte=start_payment)
+            recebimentos = recebimentos.filter(due_at__gte=start_payment)
+        elif end_payment:
+            recebimentos = recebimentos.filter(payment_at__lte=end_payment)
+            recebimentos = recebimentos.filter(due_at__lte=end_payment)
+
+    # Criar dicionário para agrupar os movimentos por categoria e somar os valores
+    total_general = Decimal(0)
+
+    for movement in recebimentos:
+        if(movement.category.type_category.id == 2):
+            total_general -= movement.value  # Soma geral
+        else:
+            total_general += movement.value  # Soma geral
+
+    # 🔹 Exibir no terminal do servidor
+    #pprint.pprint(dict(grouped_movements))
+
+    return render(request, 'pages/relatorios/extrato.html', {
+        "movements": recebimentos,
+        "total_general": total_general,
+        'titulo': titulo
+    })
 
 def cadastro(request):
     if request.method == "POST":
