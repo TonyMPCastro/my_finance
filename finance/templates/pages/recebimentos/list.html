@@ -79,24 +79,13 @@
                 </div>
             </div>
           </div>
-    <!-- JavaScript para limpar o formulário -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let clearFiltersBtn = document.getElementById("clear-filters");
-            if (clearFiltersBtn) {
-                clearFiltersBtn.addEventListener("click", function () {
-                    let url = this.getAttribute("data-url");  // Pegando a URL do atributo data-url
-                    window.location.href = url;  // Redirecionando para a página sem filtros
-                });
-            }
-        });
-    </script>
+
 
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 20px;">
         <div></div>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group mr-2">
-            <button class="btn btn-success"><i class="fa-solid fa-plus"></i> Cadastrar</button>
+            <button class="btn btn-success" id="add_mov" data-url="{% url 'cadastro_recebimento' %}"><i class="fa-solid fa-plus"></i> Cadastrar</button>
           </div>
           <nav id="nav_acaes" class="navmenu">
             <ul>

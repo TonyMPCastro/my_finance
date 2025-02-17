@@ -1,0 +1,35 @@
+{% extends 'base.html' %}  <!-- Caminho do template base -->
+
+{% block title %}Delete Despesas{% endblock %}
+
+{% block header %}
+
+{% include 'menus/menu.html' %}  <!-- Inclui o menu -->
+
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section id="hero" class="hero section">
+
+    
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+
+            <div class="col-md-10">
+
+                <h2>Tem certeza que deseja excluir "{{ despesa.description }}"?</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                    <a href="{% url 'listar_despesas' %}" class="btn btn-secondary">Cancelar</a>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    
+
+</section>
+{% endblock %}

@@ -804,6 +804,7 @@
   }
 
   .hero .btn-outline-primary,
+  .hero .btn-outline-light,
   .hero .btn-outline-danger,
   .hero .btn-outline-secondary{
     border-radius: 50px;

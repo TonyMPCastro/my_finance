@@ -1,0 +1,165 @@
+{% extends 'base.html' %}  <!-- Caminho do template base -->
+
+{% block title %}Cadastro de Despesas{% endblock %}
+
+{% block header %}
+
+{% include 'menus/menu.html' %}  <!-- Inclui o menu -->
+
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section id="hero" class="hero section">
+
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+
+            <div class="col-md-10">
+                <div class="card shadow-lg">
+                    <div class="card-header text-center bg-dark text-white">
+                        <br>
+                        <h4 class=" text-white">Cadastro de Despesas</h4>  
+                        <div class="header-actions" style="float:left">
+                            <a class="btn btn-outline-light"  href="{% url 'listar_despesas' %}"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <div id="formErrorsPlaceholder"></div>
+
+                        {% if form.errors %}
+                            <script type="text/javascript">
+                                const formErrors = [
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            { "message": "{{ error|escapejs }}", "type": "danger" },  <!-- Alerta de erro (danger) -->
+                                        {% endfor %}
+                                    {% endfor %}
+                                ];
+
+                                const formErrorsPlaceholder = document.getElementById('formErrorsPlaceholder');
+                                
+                                // Função para adicionar o alerta de erro
+                                const appendErrorAlert = (message, type) => {
+                                    const wrapper = document.createElement('div');
+                                    wrapper.innerHTML = [
+                                        `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                                        `   <div>${message}</div>`,
+                                        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                                        '</div>'
+                                    ].join('');
+                                    
+                                    formErrorsPlaceholder.append(wrapper);
+                                    
+                                    // Fazer o erro desaparecer após 5 segundos
+                                    setTimeout(() => {
+                                        wrapper.remove();
+                                    }, 5000);  // 5000 milissegundos = 5 segundos
+                                };
+
+                                // Exibe os erros do formulário
+                                formErrors.forEach(err => {
+                                    appendErrorAlert(err.message, err.type);
+                                });
+                            </script>
+                        {% endif %}
+
+    
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <label for="{{ form.description.id_for_label }}" class="form-label">Descrição:</label>
+                                        {{ form.description }}
+                                        <div class="invalid-feedback">Por favor, insira uma descrição.</div>
+                                    </div>
+
+                                </div>
+                            
+                                <div class="row mt-3">
+                                                                
+                                    <div class="col-md-6">
+                                        <label for="{{ form.category.id_for_label }}" class="form-label">Categoria:</label>
+                                        {{ form.category }}
+                                        <div class="invalid-feedback">Escolha uma categoria válida.</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="{{ form.bank.id_for_label }}" class="form-label">Banco:</label>
+                                        {{ form.bank }}
+                                        <div class="invalid-feedback">Escolha um banco válido.</div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-3">
+                                        <label for="{{ form.status.id_for_label }}" class="form-label">Status:</label>
+                                        {{ form.status }}
+
+                                        {% if form.status.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.status.errors %}
+                                                    <small>{{ error }}</small><br>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            
+                                
+                            
+                                <div class="row mt-3">
+                                    <div class="col-md-3">
+                                        <label for="{{ form.value.id_for_label }}" class="form-label">Valor:</label>
+                                        {{ form.value }}
+                                        <div class="invalid-feedback">Digite um valor válido.</div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="{{ form.due_at.id_for_label }}" class="form-label">Data de Vencimento:</label>
+                                        {{ form.due_at }}
+                                        <div class="invalid-feedback">Escolha uma data de vencimento.</div>
+                                    </div>
+                
+                                    <div class="col-md-3">
+                                        <label for="{{ form.value_payment.id_for_label }}" class="form-label">Valor Pago:</label>
+                                        {{ form.value_payment }} 
+                                        <div class="invalid-feedback">Informe o valor pago.</div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-3">
+                                        <label for="{{ form.payment_at.id_for_label }}" class="form-label">Data de Pagamento:</label>
+                                        {{ form.payment_at }}
+                                        <div class="invalid-feedback">Escolha uma data de pagamento.</div>
+                                    </div>
+                            
+                                </div>
+                            
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="{{ form.file.id_for_label }}" class="form-label">Comprovante:</label>
+                                        {{ form.file }}
+                                        <div class="invalid-feedback">Envie um arquivo válido.</div>
+                                    </div>
+                                </div>
+                               
+                            <div class="card-footer text-center ">
+                                <button type="submit" class="btn btn-success w-50"><i class="fa-solid fa-plus"></i> Cadastrar</button>
+                            </div>
+    
+                           
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+
+</section>
+
+{% endblock %}

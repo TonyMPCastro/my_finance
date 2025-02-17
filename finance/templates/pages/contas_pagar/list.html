@@ -88,24 +88,11 @@
         </div>
     </div>
 
-    <!-- JavaScript para limpar o formulário -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let clearFiltersBtn = document.getElementById("clear-filters");
-            if (clearFiltersBtn) {
-                clearFiltersBtn.addEventListener("click", function () {
-                    let url = this.getAttribute("data-url");  // Pegando a URL do atributo data-url
-                    window.location.href = url;  // Redirecionando para a página sem filtros
-                });
-            }
-        });
-    </script>
-
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom" style="margin-top: 20px;">
         <h1 class="h2">{{ titulo }}</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group mr-2">
-            <button class="btn btn-success"><i class="fa-solid fa-plus"></i> Cadastrar</button>
+            <button class="btn btn-success" id="add_mov" data-url="{% url 'cadastro_despesa' %}"><i class="fa-solid fa-plus"></i> Cadastrar</button>
           </div>
           <nav id="nav_acaes" class="navmenu">
             <ul>
@@ -118,6 +105,44 @@
           </nav>
         </div>
       </div>
+
+      <div id="liveAlertPlaceholder"></div>
+
+        {% if messages %}
+            <script type="text/javascript">
+                const messages = [
+                    {% for message in messages %}
+                        { "message": "{{ message|escapejs }}", "type": "{{ message.tags }}" },
+                    {% endfor %}
+                ];
+
+                const alertPlaceholder = document.getElementById('liveAlertPlaceholder');
+                
+                // Função para adicionar o alerta
+                const appendAlert = (message, type) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = [
+                        `<div class="alert alert-${type} alert-dismissible" role="alert">`,
+                        `   <div>${message}</div>`,
+                        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+                        '</div>'
+                    ].join('');
+                    
+                    alertPlaceholder.append(wrapper);
+                    
+                    // Fazer o alerta desaparecer após 5 segundos
+                    setTimeout(() => {
+                        wrapper.remove();
+                    }, 5000);  // 5000 milissegundos = 5 segundos
+                };
+
+                // Exibe as mensagens
+                messages.forEach(msg => {
+                    appendAlert(msg.message, msg.type);
+                });
+            </script>
+        {% endif %}
+
 
     <!-- Tabela de Despesas -->
     <div class="table-responsive">
@@ -143,8 +168,8 @@
                         <tr>
                             <td>
                                 <div class="product_box_controls">
-                                    <a class="btn btn-outline-primary btn-sm" href="#"> <i class="fa-solid fa-pen-to-square"></i> Editar </a>
-                                    <a class="btn btn-outline-danger btn-sm" href="#"> <i class="fa-solid fa-trash-can"></i> Deletar </a>
+                                    <a class="btn btn-outline-primary btn-sm" href="{% url 'editar_despesa' movement.pk %}"> <i class="fa-solid fa-pen-to-square"></i> Editar </a>
+                                    <a class="btn btn-outline-danger btn-sm" href="{% url 'deletar_despesa' movement.pk %}"> <i class="fa-solid fa-trash-can"></i> Deletar </a>
                                 </div>
                             </td>
                             <td>{{ movement.description }}</td>

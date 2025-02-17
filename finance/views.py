@@ -4,12 +4,12 @@ import locale
 import pprint  # Módulo para imprimir dicionários de forma organizada
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import logout
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .forms import CadastroForm
+from . import forms
 from django.views.decorators.cache import never_cache
 from . import models
 from collections import defaultdict
@@ -363,7 +363,7 @@ def listar_extrato(request):
 
 def cadastro(request):
     if request.method == "POST":
-        form = CadastroForm(request.POST)
+        form = forms.CadastroForm(request.POST)
         if form.is_valid():
             user = User.objects.create_user(
                 username=form.cleaned_data['username'],
@@ -374,6 +374,105 @@ def cadastro(request):
             return redirect('login')  # Altere para a URL de login
 
     else:
-        form = CadastroForm()
+        form = forms.CadastroForm()
 
     return render(request, "cadastro/form.html", {"form": form})
+
+
+@login_required
+@never_cache
+def cadastro_despesa(request):
+    if request.method == "POST":
+        form = forms.MovementExpenseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Despesa cadastrada com sucesso!")
+            return redirect('listar_despesas')  # Redireciona para uma lista de produtos
+        else:
+            messages.error(request, "Erro ao cadastrar despesa.")
+    else:
+        form = forms.MovementExpenseForm()
+
+    return render(request, "pages/contas_pagar/form.html", {"form": form})
+
+@login_required
+@never_cache
+def editar_despesa(request, pk):
+    despesa = get_object_or_404(models.MovementFinancial, pk=pk)
+
+    if request.method == "POST":
+        form = forms.MovementExpenseForm(request.POST, instance=despesa)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Despesa atualizada com sucesso!")
+            return redirect("listar_despesas")  # Redireciona para a lista
+        else:
+            messages.error(request, "Erro ao atualizar despesa.")
+    else:
+        form = forms.MovementExpenseForm(instance = despesa)  # Preenche com os dados atuais
+
+    return render(request, "pages/contas_pagar/form.html", {"form": form})
+
+
+@login_required
+@never_cache
+def deletar_despesa(request, pk):
+
+    despesa = get_object_or_404(models.MovementFinancial, pk=pk)
+
+    if request.method == "POST":
+        despesa.delete()
+        messages.success(request, "Despesa excluída com sucesso!")
+        return redirect("listar_despesas")
+
+    return render(request, "pages/contas_pagar/confirm_delete.html", {"despesa": despesa})
+
+
+
+@login_required
+@never_cache
+def cadastro_recebimento(request):
+    if request.method == "POST":
+        form = forms.MovementExpenseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Recebimento cadastrada com sucesso!")
+            return redirect('listar_listar_recebimentosdespesas')  # Redireciona para uma lista de produtos
+        else:
+            messages.error(request, "Erro ao cadastrar despesa.")
+    else:
+        form = forms.MovementExpenseForm()
+
+    return render(request, "pages/recebimentos/form.html", {"form": form})
+
+@login_required
+@never_cache
+def editar_despesa(request, pk):
+    despesa = get_object_or_404(models.MovementFinancial, pk=pk)
+
+    if request.method == "POST":
+        form = forms.MovementExpenseForm(request.POST, instance=despesa)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Despesa atualizada com sucesso!")
+            return redirect("listar_despesas")  # Redireciona para a lista
+        else:
+            messages.error(request, "Erro ao atualizar despesa.")
+    else:
+        form = forms.MovementExpenseForm(instance = despesa)  # Preenche com os dados atuais
+
+    return render(request, "pages/contas_pagar/form.html", {"form": form})
+
+
+@login_required
+@never_cache
+def deletar_despesa(request, pk):
+
+    despesa = get_object_or_404(models.MovementFinancial, pk=pk)
+
+    if request.method == "POST":
+        despesa.delete()
+        messages.success(request, "Despesa excluída com sucesso!")
+        return redirect("listar_despesas")
+
+    return render(request, "pages/contas_pagar/confirm_delete.html", {"despesa": despesa})

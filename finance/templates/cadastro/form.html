@@ -21,9 +21,9 @@
                 </div>
                 <div class="card-body">
                     
-                    {% if form.confirmar_senha.errors %}
+                    {% if messages %}
                         <div class="alert alert-danger">
-                            {% for message in form.confirmar_senha.errors %}
+                            {% for message in messages %}
                                 {{ message }}
                             {% endfor %}
                         </div>

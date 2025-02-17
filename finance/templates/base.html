@@ -66,160 +66,196 @@
       </script>
     
 
-
+ <!-- JavaScript para limpar o formulário -->
       <script>
 
-(function() {
-  "use strict";
-
-  /**
-   * Apply .scrolled class to the body as the page is scrolled down
-   */
-  function toggleScrolled() {
-    const selectBody = document.querySelector('body');
-    const selectHeader = document.querySelector('#header');
-    if (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top')) return;
-    window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
-  }
-
-  document.addEventListener('scroll', toggleScrolled);
-  window.addEventListener('load', toggleScrolled);
-
-  /**
-   * Mobile nav toggle
-   */
-  const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
-
-  function mobileNavToogle() {
-    document.querySelector('body').classList.toggle('mobile-nav-active');
-    mobileNavToggleBtn.classList.toggle('bi-list');
-    mobileNavToggleBtn.classList.toggle('bi-x');
-  }
-  if (mobileNavToggleBtn) {
-    mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
-  }
-
-  /**
-   * Hide mobile nav on same-page/hash links
-   */
-  document.querySelectorAll('#navmenu a').forEach(navmenu => {
-    navmenu.addEventListener('click', () => {
-      if (document.querySelector('.mobile-nav-active')) {
-        mobileNavToogle();
-      }
-    });
-
-  });
-
-  /**
-   * Toggle mobile nav dropdowns
-   */
-  document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
-    navmenu.addEventListener('click', function(e) {
-      e.preventDefault();
-      this.parentNode.classList.toggle('active');
-      this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
-      e.stopImmediatePropagation();
-    });
-  });
-
-  /**
- * Scroll top button
- */
-document.addEventListener("DOMContentLoaded", function () {
-  let scrollTop = document.querySelector(".scroll-top");
-
-  if (scrollTop) {  // Verifica se o elemento existe
-    function toggleScrollTop() {
-      window.scrollY > 100
-        ? scrollTop.classList.add("active")
-        : scrollTop.classList.remove("active");
-    }
-
-    scrollTop.addEventListener("click", (e) => {
-      e.preventDefault();
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    });
-
-    window.addEventListener("load", toggleScrollTop);
-    document.addEventListener("scroll", toggleScrollTop);
-  }
-});
+     
+  
+          document.addEventListener("DOMContentLoaded", function () {
+              let clearFiltersBtn = document.getElementById("clear-filters");
+              if (clearFiltersBtn) {
+                  clearFiltersBtn.addEventListener("click", function () {
+                      let url = this.getAttribute("data-url");  // Pegando a URL do atributo data-url
+                      window.location.href = url;  // Redirecionando para a página sem filtros
+                  });
+              }
 
 
-  /**
-   * Init swiper sliders
-   */
-  function initSwiper() {
-    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
-      let config = JSON.parse(
-        swiperElement.querySelector(".swiper-config").innerHTML.trim()
-      );
+              let add_mov = document.getElementById("add_mov");
+              if (add_mov) {
+                add_mov.addEventListener("click", function () {
+                      let url = this.getAttribute("data-url");  // Pegando a URL do atributo data-url
+                      window.location.href = url;  // Redirecionando para a página sem filtros
+                  });
+              }
+                 // Aplica a máscara em todos os inputs que possuem a classe 'value-payment'
+                document.querySelectorAll("#value_generic").forEach(function (input) {
+                  if (input) {
+                    input.addEventListener("input", function () {
+                      let value = this.value.replace(/\D/g, ""); // Remove tudo que não for número
+                      value = (value / 100).toFixed(2) + ""; // Converte para decimal (2 casas)
+                      value = value.replace(".", ","); // Troca ponto por vírgula (padrão BR)
+                      value = value.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Adiciona os pontos nos milhares
+                      this.value = "R$ " + value;
+                  });
+                  }
+              });
 
-      if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
-      } else {
-        new Swiper(swiperElement, config);
-      }
-    });
-  }
 
-  window.addEventListener("load", initSwiper);
-
-
-  /**
-   * Frequently Asked Questions Toggle
-   */
-  document.querySelectorAll('.faq-item h3, .faq-item .faq-toggle').forEach((faqItem) => {
-    faqItem.addEventListener('click', () => {
-      faqItem.parentNode.classList.toggle('faq-active');
-    });
-  });
-
-  /**
-   * Correct scrolling position upon page load for URLs containing hash links.
-   */
-  window.addEventListener('load', function(e) {
-    if (window.location.hash) {
-      if (document.querySelector(window.location.hash)) {
-        setTimeout(() => {
-          let section = document.querySelector(window.location.hash);
-          let scrollMarginTop = getComputedStyle(section).scrollMarginTop;
-          window.scrollTo({
-            top: section.offsetTop - parseInt(scrollMarginTop),
-            behavior: 'smooth'
+      
           });
-        }, 100);
-      }
-    }
-  });
+ 
+          (function() {
+            "use strict";
 
-  /**
-   * Navmenu Scrollspy
-   */
-  let navmenulinks = document.querySelectorAll('.navmenu a');
+            /**
+            * Apply .scrolled class to the body as the page is scrolled down
+            */
+            function toggleScrolled() {
+              const selectBody = document.querySelector('body');
+              const selectHeader = document.querySelector('#header');
+              if (!selectHeader.classList.contains('scroll-up-sticky') && !selectHeader.classList.contains('sticky-top') && !selectHeader.classList.contains('fixed-top')) return;
+              window.scrollY > 100 ? selectBody.classList.add('scrolled') : selectBody.classList.remove('scrolled');
+            }
 
-  function navmenuScrollspy() {
-    navmenulinks.forEach(navmenulink => {
-      if (!navmenulink.hash) return;
-      let section = document.querySelector(navmenulink.hash);
-      if (!section) return;
-      let position = window.scrollY + 200;
-      if (position >= section.offsetTop && position <= (section.offsetTop + section.offsetHeight)) {
-        document.querySelectorAll('.navmenu a.active').forEach(link => link.classList.remove('active'));
-        navmenulink.classList.add('active');
-      } else {
-        navmenulink.classList.remove('active');
-      }
-    })
-  }
-  window.addEventListener('load', navmenuScrollspy);
-  document.addEventListener('scroll', navmenuScrollspy);
+            document.addEventListener('scroll', toggleScrolled);
+            window.addEventListener('load', toggleScrolled);
 
-})();
+            /**
+            * Mobile nav toggle
+            */
+            const mobileNavToggleBtn = document.querySelector('.mobile-nav-toggle');
+
+            function mobileNavToogle() {
+              document.querySelector('body').classList.toggle('mobile-nav-active');
+              mobileNavToggleBtn.classList.toggle('bi-list');
+              mobileNavToggleBtn.classList.toggle('bi-x');
+            }
+            if (mobileNavToggleBtn) {
+              mobileNavToggleBtn.addEventListener('click', mobileNavToogle);
+            }
+
+            /**
+            * Hide mobile nav on same-page/hash links
+            */
+            document.querySelectorAll('#navmenu a').forEach(navmenu => {
+              navmenu.addEventListener('click', () => {
+                if (document.querySelector('.mobile-nav-active')) {
+                  mobileNavToogle();
+                }
+              });
+
+            });
+
+            /**
+            * Toggle mobile nav dropdowns
+            */
+            document.querySelectorAll('.navmenu .toggle-dropdown').forEach(navmenu => {
+              navmenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.parentNode.classList.toggle('active');
+                this.parentNode.nextElementSibling.classList.toggle('dropdown-active');
+                e.stopImmediatePropagation();
+              });
+            });
+
+            /**
+          * Scroll top button
+          */
+          document.addEventListener("DOMContentLoaded", function () {
+            let scrollTop = document.querySelector(".scroll-top");
+
+            if (scrollTop) {  // Verifica se o elemento existe
+              function toggleScrollTop() {
+                window.scrollY > 100
+                  ? scrollTop.classList.add("active")
+                  : scrollTop.classList.remove("active");
+              }
+
+              scrollTop.addEventListener("click", (e) => {
+                e.preventDefault();
+                window.scrollTo({
+                  top: 0,
+                  behavior: "smooth",
+                });
+              });
+
+              window.addEventListener("load", toggleScrollTop);
+              document.addEventListener("scroll", toggleScrollTop);
+            }
+          });
+
+
+            /**
+            * Init swiper sliders
+            */
+            function initSwiper() {
+              document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
+                let config = JSON.parse(
+                  swiperElement.querySelector(".swiper-config").innerHTML.trim()
+                );
+
+                if (swiperElement.classList.contains("swiper-tab")) {
+                  initSwiperWithCustomPagination(swiperElement, config);
+                } else {
+                  new Swiper(swiperElement, config);
+                }
+              });
+            }
+
+            window.addEventListener("load", initSwiper);
+
+
+            /**
+            * Frequently Asked Questions Toggle
+            */
+            document.querySelectorAll('.faq-item h3, .faq-item .faq-toggle').forEach((faqItem) => {
+              faqItem.addEventListener('click', () => {
+                faqItem.parentNode.classList.toggle('faq-active');
+              });
+            });
+
+            /**
+            * Correct scrolling position upon page load for URLs containing hash links.
+            */
+            window.addEventListener('load', function(e) {
+              if (window.location.hash) {
+                if (document.querySelector(window.location.hash)) {
+                  setTimeout(() => {
+                    let section = document.querySelector(window.location.hash);
+                    let scrollMarginTop = getComputedStyle(section).scrollMarginTop;
+                    window.scrollTo({
+                      top: section.offsetTop - parseInt(scrollMarginTop),
+                      behavior: 'smooth'
+                    });
+                  }, 100);
+                }
+              }
+            });
+
+            /**
+            * Navmenu Scrollspy
+            */
+            let navmenulinks = document.querySelectorAll('.navmenu a');
+
+            function navmenuScrollspy() {
+              navmenulinks.forEach(navmenulink => {
+                if (!navmenulink.hash) return;
+                let section = document.querySelector(navmenulink.hash);
+                if (!section) return;
+                let position = window.scrollY + 200;
+                if (position >= section.offsetTop && position <= (section.offsetTop + section.offsetHeight)) {
+                  document.querySelectorAll('.navmenu a.active').forEach(link => link.classList.remove('active'));
+                  navmenulink.classList.add('active');
+                } else {
+                  navmenulink.classList.remove('active');
+                }
+              })
+            }
+            window.addEventListener('load', navmenuScrollspy);
+            document.addEventListener('scroll', navmenuScrollspy);
+
+          })();
       </script>
     </body>
     </html>
