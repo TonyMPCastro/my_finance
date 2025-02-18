@@ -39,23 +39,39 @@ def home(request):
     # Gerando os últimos 12 meses automaticamente
     meses = [(datetime.today() - timedelta(days=30*i)).strftime('%b') for i in range(11, -1, -1)]
     
-    # Gerando valores aleatórios para receitas e despesas dos últimos 12 meses
-    receitas = [random.randint(5000, 15000) for _ in range(12)]
-    despesas = [random.randint(3000, 12000) for _ in range(12)]
+    # Inicializar o array para armazenar as somas por mês (entradas e saídas)
+    receitas = []
+    despesas = []
 
-    # Exemplo de dados
-    categorias = ['Alimentação', 'Transporte', 'Saúde', 'Entretenimento', 'Educação']
-    gastos = [200, 150, 100, 80, 120]
+   # Gerar os meses e anos dos últimos 12 meses
+    meses_f = [
+        ((datetime.today() - timedelta(days=30*i)).month, (datetime.today() - timedelta(days=30*i)).year)
+        for i in range(11, -1, -1)
+    ]
 
-    categoryData = {
-        "0":{
-            "label": 'Gastos',
-            "data": gastos,
-            "backgroundColor": ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40'],
-            "hoverOffset": 4
-        }
-    }
+    # Exibir os meses e anos gerados
+    for mes, year in meses_f:
+        
+        # Obter as receitas (entradas) para o mês específico
+        total_entradas = models.MovementFinancial.objects.filter(
+            category__type_category=1,  # Categoria de receita (entradas)
+            due_at__month=mes,  # Filtra pelo mês
+            due_at__year=year
+        ).aggregate(total=Sum('value'))['total'] or 0  # Caso não tenha valor, retorna 0
 
+        # Obter as despesas (saídas) para o mês específico
+        total_saidas = models.MovementFinancial.objects.filter(
+            category__type_category=2,  # Categoria de despesa (saídas)
+            due_at__month=mes,  # Filtra pelo mês
+            due_at__year=year
+        ).aggregate(total=Sum('value'))['total'] or 0  # Caso não tenha valor, retorna 0
+
+        # Adiciona a soma de entradas e saídas para o mês ao array
+        receitas.append(float(total_entradas))
+        despesas.append(float(total_saidas))
+
+    print(receitas)
+    
     entradas = models.MovementFinancial.objects.filter(category__type_category=1).aggregate(total=Sum('value'))
     saidas = models.MovementFinancial.objects.filter(category__type_category=2).aggregate(total=Sum('value'))
     
@@ -162,8 +178,6 @@ def home(request):
         "sales_data": json.dumps(sales_data),
         "traffic_labels": meses,
         "traffic_data": json.dumps(traffic_data) ,
-        "categoryData" : categoryData,
-        "categorias":categorias,
         'saldo_atual': saldo_atual,
         'saldo_mes': saldo_mes,
         'valor_despesas_mes': valor_despesas_mes,
@@ -311,12 +325,10 @@ def listar_recebimentos(request):
         'titulo': titulo
     })
 
-
 @login_required
 @never_cache
 def listar_extrato(request):
     today = datetime.today()
-    recebimentos = models.MovementFinancial.objects.filter(due_at__year=today.year)
 
     # Pegando filtros da request
     start_payment = request.POST.get("start_payment")  # Data inicial (payment_at)
@@ -324,9 +336,10 @@ def listar_extrato(request):
 
     titulo = "Extrato"
 
+
     # Se nenhum filtro for aplicado, usar mês atual
     if not (start_payment or end_payment):
-        recebimentos = recebimentos.filter(due_at__year=today.year, due_at__month=today.month)
+        recebimentos = models.MovementFinancial.objects.filter(due_at__year=today.year, due_at__month=today.month)
         
         # Data do mês atual
         hoje = date.today()
@@ -334,14 +347,11 @@ def listar_extrato(request):
     else:
         # Filtro por intervalo de data de pagamento (payment_at)
         if start_payment and end_payment:
-            recebimentos = recebimentos.filter(payment_at__range=[start_payment, end_payment])
-            recebimentos = recebimentos.filter(due_at__range=[start_payment, end_payment])
+            recebimentos = models.MovementFinancial.objects.filter( due_at__range=[start_payment, end_payment])
         elif start_payment:
-            recebimentos = recebimentos.filter(payment_at__gte=start_payment)
-            recebimentos = recebimentos.filter(due_at__gte=start_payment)
+            recebimentos = models.MovementFinancial.objects.filter(due_at__gte=start_payment)
         elif end_payment:
-            recebimentos = recebimentos.filter(payment_at__lte=end_payment)
-            recebimentos = recebimentos.filter(due_at__lte=end_payment)
+            recebimentos = models.MovementFinancial.objects.filter(due_at__lte=end_payment)
 
     # Criar dicionário para agrupar os movimentos por categoria e somar os valores
     total_general = Decimal(0)
@@ -378,7 +388,6 @@ def cadastro(request):
 
     return render(request, "cadastro/form.html", {"form": form})
 
-
 @login_required
 @never_cache
 def cadastro_despesa(request):
@@ -413,7 +422,6 @@ def editar_despesa(request, pk):
 
     return render(request, "pages/contas_pagar/form.html", {"form": form})
 
-
 @login_required
 @never_cache
 def deletar_despesa(request, pk):
@@ -426,53 +434,50 @@ def deletar_despesa(request, pk):
         return redirect("listar_despesas")
 
     return render(request, "pages/contas_pagar/confirm_delete.html", {"despesa": despesa})
-
-
 
 @login_required
 @never_cache
 def cadastro_recebimento(request):
     if request.method == "POST":
-        form = forms.MovementExpenseForm(request.POST)
+        form = forms.MovementPaymentForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Recebimento cadastrada com sucesso!")
-            return redirect('listar_listar_recebimentosdespesas')  # Redireciona para uma lista de produtos
+            return redirect('listar_recebimentos')  # Redireciona para uma lista de produtos
         else:
-            messages.error(request, "Erro ao cadastrar despesa.")
+            messages.error(request, "Erro ao cadastrar Recebimento.")
     else:
-        form = forms.MovementExpenseForm()
+        form = forms.MovementPaymentForm()
 
     return render(request, "pages/recebimentos/form.html", {"form": form})
 
 @login_required
 @never_cache
-def editar_despesa(request, pk):
+def editar_recebimento(request, pk):
     despesa = get_object_or_404(models.MovementFinancial, pk=pk)
 
     if request.method == "POST":
-        form = forms.MovementExpenseForm(request.POST, instance=despesa)
+        form = forms.MovementPaymentForm(request.POST, instance=despesa)
         if form.is_valid():
             form.save()
-            messages.success(request, "Despesa atualizada com sucesso!")
-            return redirect("listar_despesas")  # Redireciona para a lista
+            messages.success(request, "Recebimento atualizada com sucesso!")
+            return redirect("listar_recebimentos")  # Redireciona para a lista
         else:
-            messages.error(request, "Erro ao atualizar despesa.")
+            messages.error(request, "Erro ao atualizar Recebimento.")
     else:
-        form = forms.MovementExpenseForm(instance = despesa)  # Preenche com os dados atuais
+        form = forms.MovementPaymentForm(instance = despesa)  # Preenche com os dados atuais
 
-    return render(request, "pages/contas_pagar/form.html", {"form": form})
-
+    return render(request, "pages/recebimentos/form.html", {"form": form})
 
 @login_required
 @never_cache
-def deletar_despesa(request, pk):
+def deletar_recebimento(request, pk):
 
-    despesa = get_object_or_404(models.MovementFinancial, pk=pk)
+    recebimentos = get_object_or_404(models.MovementFinancial, pk=pk)
 
     if request.method == "POST":
         despesa.delete()
-        messages.success(request, "Despesa excluída com sucesso!")
-        return redirect("listar_despesas")
+        messages.success(request, "Recebimento excluída com sucesso!")
+        return redirect("listar_recebimentos")
 
-    return render(request, "pages/contas_pagar/confirm_delete.html", {"despesa": despesa})
+    return render(request, "pages/recebimentos/form.html", {"recebimento": recebimentos})

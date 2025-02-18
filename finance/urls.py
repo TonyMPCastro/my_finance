@@ -17,5 +17,7 @@ urlpatterns = [
      path('cadastro_recebimento/', views.cadastro_recebimento, name='cadastro_recebimento'),    
      path("despesa/editar/<int:pk>/", views.editar_despesa, name="editar_despesa"),
      path("despesa/deletar/<int:pk>/", views.deletar_despesa, name="deletar_despesa"),
+     path("recebimento/editar/<int:pk>/", views.editar_recebimento, name="editar_recebimento"),
+     path("recebimento/deletar/<int:pk>/", views.deletar_recebimento, name="deletar_recebimento"),
 
 ]
