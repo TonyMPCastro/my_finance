@@ -52,6 +52,18 @@ O projeto foi desenvolvido em equipe para aplicar conceitos fundamentais de dese
 
     pip3 install -r requirements.txt # Macbook
 
+5. CRETATE Migrations
+   ```bash
+   python .\manage.py makemigrations
+
+6. Atualiza o DB 
+   ```bash
+   python .\manage.py migrate
+
+7. CRETATE Super User
+   ```bash
+    python manage.py createsuperuser
+
 ## ✒️ Autores
 
 * **ANTONIO MP CASTRO** - *ANTONIO MARCOS PATRICIO CASTRO* - [TonyMPCastro](https://github.com/TonyMPCastro)
