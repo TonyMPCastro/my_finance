@@ -856,7 +856,7 @@
   
   .hero .customers-badge {
     position: absolute;
-    bottom: 10px;
+    bottom: 5px;
     right: 30px;
     background-color: var(--surface-color);
     padding: 1rem;
