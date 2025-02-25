@@ -356,14 +356,13 @@ def listar_extrato(request):
     # Criar dicionário para agrupar os movimentos por categoria e somar os valores
     total_general = Decimal(0)
 
-    for movement in recebimentos:
-        if(movement.category.type_category.id == 2):
-            total_general -= movement.value  # Soma geral
-        else:
-            total_general += movement.value  # Soma geral
+    receber = recebimentos.filter(category__type_category=1).aggregate(total=Sum('value'))['total'] or 0
+    saida = recebimentos.filter(category__type_category=2).aggregate(total=Sum('value'))['total'] or 0
+
+    total_general = receber - saida
 
     # 🔹 Exibir no terminal do servidor
-    #pprint.pprint(dict(grouped_movements))
+    #pprint.pprint(saida)
 
     return render(request, 'pages/relatorios/extrato.html', {
         "movements": recebimentos,

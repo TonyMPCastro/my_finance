@@ -124,7 +124,7 @@
                         {% if movement.payment_at %}
                             <td  class="text-center" >{{ movement.payment_at }}</td>
                         {% else %}
-                            <td  class="text-center" >{{ movement.due_at }}   </td>
+                            <td  class="text-center" >{{ movement.due_at }}    </td>
                         {% endif %}
 
                         {% if 2 == movement.category.type_category.id %}
@@ -135,14 +135,12 @@
                     </tr>
                 {% endfor %}
 
-                {% if total_general %}
 
-                    <tr style="text-align: right;">
-                        <td  style="text-align: right;" colspan="5"><strong>Total:</strong></td>
-                        <td  style="text-align: right;"><strong>R$ {{ total_general|floatformat:2 }}</strong></td>
-                    </tr>
+                <tr style="text-align: right;">
+                    <td  style="text-align: right;" colspan="5"><strong>Total:</strong></td>
+                    <td  style="text-align: right;"><strong>R$ {{ total_general|floatformat:2 }}</strong></td>
+                </tr>
 
-                {%endif%}
                 </tbody>
             </table>
 
